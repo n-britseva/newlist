@@ -2,43 +2,76 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Выбор цвета радуги</title>
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            /* Запрет автоматического масштабирования шрифта на мобильных */
+            -webkit-text-size-adjust: 100%;
+        }
+
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            /* 100dvh — корректная высота на мобильных с динамической адресной строкой */
             min-height: 100vh;
+            min-height: 100dvh;
             margin: 0;
+            padding: 16px;
+            /* Учёт «вырезов» и безопасных зон iPhone/Android */
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
             transition: background-color 0.5s ease;
         }
 
         h1 {
             color: #333;
+            /* Адаптивный размер заголовка */
+            font-size: clamp(1.4rem, 5vw, 2.5rem);
+            text-align: center;
+            margin: 0.5em 0;
         }
 
         .rainbow-picker {
             display: flex;
-            gap: 12px;
+            gap: clamp(8px, 2.5vw, 12px);
             margin: 24px 0;
             flex-wrap: wrap;
             justify-content: center;
+            width: 100%;
+            max-width: 720px;
         }
 
         .color-swatch {
-            width: 64px;
-            height: 64px;
+            /* Адаптивный размер кружков: от 44px (минимальная комфортная зона касания) до 64px */
+            width: clamp(44px, 11vw, 64px);
+            height: clamp(44px, 11vw, 64px);
             border-radius: 50%;
             border: 3px solid transparent;
             cursor: pointer;
+            touch-action: manipulation; /* убирает задержку тапа и случайный зум */
+            -webkit-tap-highlight-color: transparent; /* убирает серую подсветку при тапе на iOS/Android */
             transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        .color-swatch:hover {
-            transform: scale(1.15);
+        /* Hover — только для устройств с курсором, чтобы на тач-экранах эффект не «залипал» */
+        @media (hover: hover) and (pointer: fine) {
+            .color-swatch:hover {
+                transform: scale(1.15);
+            }
+        }
+
+        /* Отклик при касании пальцем */
+        .color-swatch:active {
+            transform: scale(1.1);
         }
 
         .color-swatch.selected {
@@ -48,9 +81,41 @@
         }
 
         #result {
-            font-size: 1.2em;
+            font-size: clamp(1rem, 4vw, 1.2em);
             color: #333;
             margin-top: 16px;
+            text-align: center;
+            /* Длинный текст переносим, а не обрезаем */
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
+        }
+
+        /* Узкие экраны (смартфоны в портретной ориентации): сетка 4×2 вместо одной строки */
+        @media (max-width: 480px) {
+            .color-swatch {
+                flex: 0 0 calc(25% - 12px);
+                width: auto;
+                aspect-ratio: 1 / 1;
+                height: auto;
+            }
+
+            /* Без увеличения выбранного элемента, чтобы не ломать сетку */
+            .color-swatch.selected {
+                transform: none;
+            }
+        }
+
+        /* Альбомная ориентация телефона: компактные отступы, прокрутка вместо центрирования */
+        @media (max-height: 480px) and (orientation: landscape) {
+            body {
+                justify-content: flex-start;
+                padding-top: 12px;
+            }
+
+            .rainbow-picker {
+                margin: 12px 0;
+            }
         }
     </style>
 </head>
